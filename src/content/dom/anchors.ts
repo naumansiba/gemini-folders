@@ -1,9 +1,9 @@
-﻿const PROJECTS_HOST_ID = 'gemini-projects-host';
+const PROJECTS_HOST_ID = 'gemini-projects-host';
 const OVERLAY_HOST_ID = 'gemini-projects-overlay';
-const GEMS_SECTION_LABELS_EN = ['Gem', 'Gems'];
-const CHATS_SECTION_LABELS_EN = ['Chat', 'Chats'];
-const GEMS_SECTION_LABELS_ZH = ['\u5b9d\u77f3', '\u6211\u7684 Gem', '\u6211\u7684 Gems'];
-const CHATS_SECTION_LABELS_ZH = ['\u804a\u5929', '\u804a\u5929\u8bb0\u5f55', '\u5bf9\u8bdd'];
+const GEMS_SECTION_LABELS_EN = ['Gem', 'Gems', 'Notebook', 'Notebooks'];
+const CHATS_SECTION_LABELS_EN = ['Chat', 'Chats', 'Recent', 'Recents'];
+const GEMS_SECTION_LABELS_ZH = ['\u5b9d\u77f3', '\u6211\u7684 Gem', '\u6211\u7684 Gems', '\u7b14\u8bb0\u672c'];
+const CHATS_SECTION_LABELS_ZH = ['\u804a\u5929', '\u804a\u5929\u8bb0\u5f55', '\u5bf9\u8bdd', '\u6700\u8fd1', '\u6700\u8fd1\u7684\u5bf9\u8bdd'];
 
 function normalizeText(value: string | null): string {
   return (value || '').trim().toLowerCase();
@@ -68,6 +68,13 @@ function mergeLabels(primary: string[], fallback: string[]): string[] {
 }
 
 export function findSidebarRoot(): HTMLElement | null {
+  // 1. Try direct tag selector first (most robust for the new layout)
+  const sidenav = document.querySelector('bard-sidenav') as HTMLElement | null;
+  if (sidenav) {
+    return sidenav;
+  }
+
+  // 2. Fallback to candidate element search
   const candidates = Array.from(
     document.querySelectorAll<HTMLElement>('nav, aside, [role="navigation"], [role="complementary"]')
   );
@@ -77,7 +84,8 @@ export function findSidebarRoot(): HTMLElement | null {
 
   for (const candidate of candidates) {
     const text = candidate.textContent || '';
-    if (includesAnyLabel(text, gemLabels) && includesAnyLabel(text, chatLabels)) {
+    // Look for a candidate containing either Gems/Notebooks or Chats/Recents labels
+    if (includesAnyLabel(text, chatLabels) || includesAnyLabel(text, gemLabels)) {
       return candidate;
     }
   }
@@ -98,11 +106,23 @@ function findSectionByTexts(root: HTMLElement, labels: string[]): HTMLElement | 
 }
 
 export function findGemsSection(root: HTMLElement): HTMLElement | null {
+  // Try data-test-id selectors first
+  const notebooksSection = root.querySelector('[data-test-id="notebooks-expandable-section"]') as HTMLElement | null;
+  if (notebooksSection) return notebooksSection;
+  const gemsSection = root.querySelector('[data-test-id="gems-expandable-section"]') as HTMLElement | null;
+  if (gemsSection) return gemsSection;
+
+  // Fallback to text matching
   const labels = getSectionLabelGroups();
   return findSectionByTexts(root, labels.gemsPrimary) || findSectionByTexts(root, labels.gemsFallback);
 }
 
 export function findChatsSection(root: HTMLElement): HTMLElement | null {
+  // Try data-test-id selector first
+  const testIdSection = root.querySelector('[data-test-id="chats-expandable-section"]') as HTMLElement | null;
+  if (testIdSection) return testIdSection;
+
+  // Fallback to text matching
   const labels = getSectionLabelGroups();
   return findSectionByTexts(root, labels.chatsPrimary) || findSectionByTexts(root, labels.chatsFallback);
 }
@@ -111,10 +131,28 @@ export function findChatsListContainer(chatsHeader: HTMLElement | null): HTMLEle
   if (!chatsHeader) {
     return null;
   }
+
+  // 1. Try to find a known list element inside the chatsHeader itself (e.g. expandable-section container)
+  const internalList = chatsHeader.querySelector('conversations-list, mat-nav-list, [role="list"]') as HTMLElement | null;
+  if (internalList) {
+    return internalList;
+  }
+
+  // 2. Check if the chatsHeader contains a chat link, if so get its container
+  if (chatsHeader.querySelector('a[href]')) {
+    const link = chatsHeader.querySelector('a[href]');
+    const container = link?.closest('conversations-list, mat-nav-list, [role="list"], ul, ol') as HTMLElement | null;
+    if (container && chatsHeader.contains(container)) {
+      return container;
+    }
+  }
+
+  // 3. Fallback to siblings (original logic)
   let sibling = chatsHeader.nextElementSibling as HTMLElement | null;
   while (sibling) {
     if (sibling.querySelector('a[href]')) {
-      return sibling;
+      const container = sibling.querySelector('conversations-list, mat-nav-list, [role="list"], ul, ol') as HTMLElement | null;
+      return container || sibling;
     }
     sibling = sibling.nextElementSibling as HTMLElement | null;
   }

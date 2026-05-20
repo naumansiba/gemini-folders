@@ -1,4 +1,4 @@
-﻿import { Project } from '../../shared/types';
+import { Project } from '../../shared/types';
 import { getConversationIdFromChatRow } from './anchors';
 import { renderIconSvg } from '../ui/icons';
 
@@ -134,7 +134,7 @@ export function attachChatMenuEnhancer(options: ChatMenuEnhancerOptions) {
     (event) => {
       const target = event.target as HTMLElement | null;
       if (!target) return;
-      const inSidebar = !!target.closest('nav, aside, [role="navigation"], [role="complementary"]');
+      const inSidebar = !!target.closest('bard-sidenav, nav, aside, [role="navigation"], [role="complementary"]');
       if (inSidebar) {
         log('pointerdown', describeEl(target));
       }
@@ -222,7 +222,7 @@ export function isChatKebabButton(el: HTMLElement): boolean {
     '选项'
   ].some((token) => label.includes(token));
   const hasAnchor = !!row?.querySelector?.('a[href]');
-  const inSidebar = !!button.closest('nav, aside, [role="navigation"], [role="complementary"]');
+  const inSidebar = !!button.closest('bard-sidenav, nav, aside, [role="navigation"], [role="complementary"]');
   if (labelHit && inSidebar) return true;
   return (hasMenuAttr || hasDots || labelHit) && (hasAnchor || inSidebar);
 }
@@ -934,7 +934,7 @@ function escapeHtml(value: string): string {
 function findChatRowFromTarget(target: HTMLElement): HTMLElement | null {
   const anchor = target.closest('a[href]') as HTMLElement | null;
   if (anchor) {
-    return (anchor.closest('[role="listitem"], li, div') as HTMLElement | null) ?? anchor;
+    return (anchor.closest('gem-nav-list-item, [role="listitem"], li, div') as HTMLElement | null) ?? anchor;
   }
   let current: HTMLElement | null = target;
   while (current && current !== document.body) {
@@ -943,7 +943,7 @@ function findChatRowFromTarget(target: HTMLElement): HTMLElement | null {
     }
     current = current.parentElement;
   }
-  return target.closest('[role="listitem"], li, div') as HTMLElement | null;
+  return target.closest('gem-nav-list-item, [role="listitem"], li, div') as HTMLElement | null;
 }
 
 function findMenuListContainer(menuRoot: HTMLElement): { container: HTMLElement; deleteItem?: HTMLElement } {

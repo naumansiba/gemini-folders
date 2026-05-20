@@ -1,69 +1,112 @@
-# Gemini Folders Extension
+# Gemini Projects Extension
 
-A Chrome Extension that allows you to organize your Google Gemini chats into custom folders. This extension runs completely locally and stores data in your browser's local storage.
+A Chrome extension for `https://gemini.google.com` that adds local **Projects** and **Prompt Library** workflows.
 
 ## Features
 
--   **Create Projects/Folders**: Organize your chats into named projects with custom icons and colors.
--   **Drag and Drop**: Although primarily menu-based now for reliability, basic drag-and-drop support is included.
--   **Context Menu "Move to Project"**: Easily move chats to projects by clicking the three dots menu on any chat item.
--   **Privacy Focused**: All data is stored locally in `chrome.storage.local`. No external servers are involved.
--   **Native UI**: Designed to look and feel exactly like the native Gemini interface.
+- Organize chats into Projects in the left sidebar
+- Add or remove chats from a project
+- Create, edit, and delete projects (icon + color)
+- Prompt Library entry in the composer area
+- Search, create, edit, delete, and insert prompts quickly
+- Backup and restore local Projects + Prompt Library data via JSON file
 
-## Installation
+## Tech Stack
 
-### Prerequisites
+- TypeScript
+- Vite
+- Chrome Extension Manifest V3
 
--   Use a Chromium-based browser (Chrome, Edge, Brave, etc.).
--   Have `npm` (Node.js) installed to build the project.
+## Requirements
 
-### Building from Source
-
-1.  Clone this repository:
-    ```bash
-    git clone https://github.com/naumansiba/gemini-folders.git
-    cd gemini-folders
-    ```
-
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-
-3.  Build the extension:
-    ```bash
-    npm run build
-    ```
-    This will generate a `dist` folder containing the compiled extension.
-
-### Loading into Chrome
-
-1.  Open your browser and navigate to `chrome://extensions`.
-2.  Enable **Developer mode** (toggle in the top right corner).
-3.  Click **Load unpacked**.
-4.  Select the `dist` folder inside the project directory.
-5.  Go to [gemini.google.com](https://gemini.google.com) and refresh the page.
-
-## Usage
-
-1.  **Sidebar Panel**: You will see a new "Projects" section in the left sidebar.
-2.  **Create Project**: Click "New Project" to create a folder. You can choose an icon and color.
-3.  **Move Chats**: 
-    -   Click the three dots (`...`) on any chat in your history.
-    -   Select **Move to Project** from the menu.
-    -   Choose the destination project.
-4.  **Manage Projects**: Click the three dots next to a project name to rename or delete it.
+- Node.js 18+
+- Chrome (or other Chromium-based browsers)
 
 ## Development
 
-The project is built with TypeScript and Vite.
+Install dependencies:
 
--   `src/content`: Content scripts that inject the UI into Gemini.
--   `src/background`: Background service worker.
--   `src/shared`: Shared types and utilities.
+```bash
+npm install
+```
 
-To work on the extension, run `npm run watch` (if configured) or rebuild after changes with `npm run build`.
+Build once:
 
-## License
+```bash
+npm run build
+```
 
-MIT
+Watch build:
+
+```bash
+npm run dev
+```
+
+Type check:
+
+```bash
+npm run lint
+```
+
+## Load Extension Locally
+
+1. Open `chrome://extensions`
+2. Enable `Developer mode`
+3. Click `Load unpacked`
+4. Select the `dist/` folder
+
+## Build Release Zip
+
+```bash
+npm run package:store
+```
+
+Output path:
+
+- `release/store-upload-<timestamp>/unpacked` (for Load unpacked)
+- `release/store-upload-<timestamp>/gemini-project-extension-store.zip` (for Web Store upload)
+
+## Project Structure
+
+- `src/background.ts`: background service worker
+- `src/content/`: content scripts (UI injection, menus, prompts)
+- `src/shared/`: shared types and storage helpers
+- `public/manifest.json`: manifest template
+- `scripts/package-store.ps1`: one-command store packaging
+
+## Privacy
+
+- Data is stored locally in `chrome.storage`
+- Core features do not require an external backend
+- Prompts and projects are not proactively uploaded by this extension
+
+## Notes
+
+- This is an unofficial extension and is not affiliated with Google Gemini.
+
+## Gen-5 Strategy Cockpit (Streamlit MVP)
+
+This repository also includes a standalone strategy review dashboard:
+
+- App entry: `cockpit_app.py`
+- Python deps: `cockpit_requirements.txt`
+
+Install:
+
+```bash
+python -m pip install -r cockpit_requirements.txt
+```
+
+Run:
+
+```bash
+python -m streamlit run cockpit_app.py -- --runs-root "E:\OneDrive\Desktop"
+```
+
+`--runs-root` should point to a folder containing one or more run sub-folders
+(for example `wudai_outputs`) with the generated CSV files.
+
+### Cockpit theme note
+
+- The cockpit now uses a warm neutral theme with higher contrast HUD cards.
+- If metric text appears too light after updates, clear browser cache and refresh Streamlit page.

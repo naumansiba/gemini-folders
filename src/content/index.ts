@@ -1,4 +1,4 @@
-﻿import { BackgroundRequest, BackgroundResponse, ChatRef, Project, RuntimeState } from '../shared/types';
+import { BackgroundRequest, BackgroundResponse, ChatRef, Project, RuntimeState } from '../shared/types';
 import {
   findSidebarRoot,
   findGemsSection,
@@ -91,7 +91,7 @@ export function renderUnassignedChatsSection(chatIndex: Map<string, ChatRef>) {
   if (!chatsList) return;
   const chatLinks = Array.from(chatsList.querySelectorAll<HTMLAnchorElement>('a[href]'));
   chatLinks.forEach((link) => {
-    const row = link.closest('[role="listitem"], li, div') || link;
+    const row = link.closest('gem-nav-list-item, [role="listitem"], li, div') || link;
     const conversationId = getConversationIdFromChatRow(row) || getConversationId(link.href);
     if (!conversationId) {
       (row as HTMLElement).style.display = '';
@@ -120,7 +120,7 @@ async function bootstrap() {
   attachChatClickTracker();
 
   // Initialize Prompts Feature
-  // prompts.bootstrap();
+  prompts.bootstrap();
 }
 
 function observeSidebar() {
@@ -159,7 +159,7 @@ function ensurePanel() {
   if (!sidebarRoot) return;
   const gems = findGemsSection(sidebarRoot);
   const chats = findChatsSection(sidebarRoot);
-  if (!gems || !chats) {
+  if (!chats) {
     return;
   }
 
@@ -229,7 +229,7 @@ function attachChatClickTracker() {
     const conversationId = getConversationId(link.href);
     if (!conversationId) return;
     const existing = state.chatIndex.get(conversationId);
-    const row = link.closest('[role="listitem"], li, div') || link;
+    const row = link.closest('gem-nav-list-item, [role="listitem"], li, div') || link;
     const normalized = normalizeChatTitleAndPinned((link.textContent || '').trim() || existing?.title || '', row);
     const title = normalized.title || existing?.title || '';
     state.chatIndex.set(conversationId, {
@@ -262,7 +262,7 @@ function syncChatsFromDom() {
   const updates: ChatRef[] = [];
 
   chatLinks.forEach((link) => {
-    const row = link.closest('[role="listitem"], li, div') || link;
+    const row = link.closest('gem-nav-list-item, [role="listitem"], li, div') || link;
     const conversationId = getConversationIdFromChatRow(row) || getConversationId(link.href);
     if (!conversationId) return;
     const normalized = normalizeChatTitleAndPinned((link.textContent || '').trim(), row);
